@@ -64,14 +64,18 @@
   (try
     (->
       (cond
+        (vector? data) (doall (map #(save db n %) data))
         (:id data) (clojure.java.jdbc/query (:db-spec db) ["Update people set body = ? where id = ? returning *" (dissoc data :id) (:id data)])
         :else (sql/insert! (:db-spec db) n {:body data}))
       (row-data-to-map)
       (first))
-    (catch Exception e
-      ;(println (.toString (.getNextException e)))
+    (catch java.sql.SQLException e
+      ;(sql/print-sql-exception e)
       (create-table db (name n))
-      (save db n data))))
+      (save db n data))
+    (catch Exception e
+      ;(println (.toString e))
+      (throw e))))
 
 (defn raw-query [db query]
   (try

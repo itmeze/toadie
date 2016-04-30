@@ -18,3 +18,12 @@
         (let [res (toadie/raw-query test-store "select count(*) from people")
               c (count res)]
           (is (= c 1)))))))
+
+(def v-people
+  [{:name "maria" :surname "johnson" :age 42}
+   {:name "michal" :surname "itmeze" :age 32}])
+
+(deftest multi-insert
+  (testing "insert x elements should return x maps"
+    (let [all-inserted (toadie/save test-store :people v-people)]
+      (is (count all-inserted) 2))))
