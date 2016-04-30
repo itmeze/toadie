@@ -1,40 +1,13 @@
-(ns toadie.core-test
+(ns toadie.query-test
   (:require [clojure.test :refer :all]
             [toadie.core :as toadie]
             [clojure.java.jdbc :as sql]
             [clj-time.core :as time]
             [clj-time.coerce :as c]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+            [toadie.test-helpers :refer :all]))
 
-(def test-store
-  (toadie/docstore (env :test-db-url)))
-
-(defn drop-table [table-name]
-  (sql/db-do-commands (:db-spec test-store) (str "drop table if exists " table-name)))
-
-(defn db-fixtures [f]
-  (f) (drop-table "people") (drop-table "posts"))
-
-(use-fixtures :each db-fixtures)
-
-(deftest insert
-  (testing "after inserting to database"
-    (let [inserted (toadie/save test-store :people {:name "maria" :surname "johnson" :age 42})]
-      (testing "should assoc id to map"
-        (is (> (inserted :id) 0)))
-      (testing "should store in database"
-        (let [res (toadie/raw-query test-store "select count(*) from people")
-              c (count res)]
-          (is (= c 1)))))))
-
-(deftest update-with-id
-  (testing "saving object with an id should update it"
-    (let [inserted (toadie/save test-store :people {:name "michal"})
-          updated  (toadie/save test-store :people (assoc inserted :name "maria"))
-          result   (toadie/query test-store :people {})]
-      (is (= (count result) 1))
-      (is (= (:name (first result)) "maria"))
-      (is (= (:id inserted) (:id updated) (:id (first result)))))))
+(use-fixtures :each drop-tables)
 
 (deftest load-by-id
   (let [maria (toadie/save test-store :people {:name "maria" :age 56})
