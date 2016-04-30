@@ -1,6 +1,6 @@
 (defproject toadie "0.1.0-SNAPSHOT"
   :description "Turn postgresql database into document storage!!"
-  :url "http://example.com/FIXME"
+  :url "https://github.com/itmeze/toadie"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :profiles { :dev {
