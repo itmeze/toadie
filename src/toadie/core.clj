@@ -97,6 +97,14 @@
       (create-table db (name n))
       (load db n id))))
 
+(defn delete-by-id [db n id]
+  (try
+    (->
+      (sql/delete! (:db-spec db) n ["id = ?" id]))
+    (catch Exception e
+      (throw e))))
+
+
 (defn- limit-sql [query]
   (if-let [limit (:limit query)]
     (str "limit " limit)))
