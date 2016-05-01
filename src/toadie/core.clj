@@ -7,7 +7,7 @@
   (:import (org.postgresql.util PGobject)))
 
 (defn sql-create-table [name]
-  (str "create table " name "(id uuid primary key not null,body jsonb not null,created_at timestamptz not null default now());"))
+  (str "create table " name "(id uuid primary key not null,body jsonb not null);"))
 
 (defn sql-create-json-index [table-name]
   (str "create index idx_" table-name " on " table-name " using GIN(body jsonb_path_ops);"))
@@ -70,7 +70,7 @@
       (row-data-to-map)
       (first))
     (catch java.sql.SQLException e
-      (sql/print-sql-exception e)
+      ;(sql/print-sql-exception e)
       (create-table db (name n))
       (save-single db n data))
     (catch Exception e
