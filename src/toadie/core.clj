@@ -1,19 +1,19 @@
 (ns toadie.core
   (require [clojure.java.jdbc :as sql]
-           [toadie.utils :as utils]
+           [toadie.utils :refer :all]
            [toadie.named-params :as nparams]
            [clojure.core :refer :all]
            [cheshire.core :as json])
   (:import (org.postgresql.util PGobject)))
 
 (defn sql-create-table [name]
-  (str "create table " name "(id serial primary key not null,body jsonb not null,created_at timestamptz not null default now());"))
+  (str "create table " name "(id uuid primary key not null,body jsonb not null,created_at timestamptz not null default now());"))
 
 (defn sql-create-json-index [table-name]
   (str "create index idx_" table-name " on " table-name " using GIN(body jsonb_path_ops);"))
 
 (defn sql-load-doc [table-name id]
-  [(str "select * from " table-name " where id = ?") id])
+  [(str "select * from " table-name " where id = ?") (uuid id)])
 
 (defn serialize [s]
   (json/generate-string s))
@@ -58,18 +58,19 @@
   (sql/db-do-commands (:db-spec db) (sql-create-json-index name)))
 
 (defn row-data-to-map [d]
-  (map #(assoc (:body %) :id (:id %)) d))
+  (map #(:body %) d))
 
 (defn- save-single [db n data]
   (try
     (->
       (cond
-        (:id data) (clojure.java.jdbc/query (:db-spec db) ["Update people set body = ? where id = ? returning *" (dissoc data :id) (:id data)])
-        :else (sql/insert! (:db-spec db) n {:body data}))
+        (:id data) (clojure.java.jdbc/query (:db-spec db) ["Update people set body = ? where id = ? returning *" data (uuid (:id data))])
+        :else (let [uuid (uuid)]
+                (sql/insert! (:db-spec db) n {:id uuid :body (assoc data :id uuid)})))
       (row-data-to-map)
       (first))
     (catch java.sql.SQLException e
-      ;(sql/print-sql-exception e)
+      (sql/print-sql-exception e)
       (create-table db (name n))
       (save-single db n data))
     (catch Exception e
@@ -100,7 +101,7 @@
 (defn delete-by-id [db n id]
   (try
     (->
-      (sql/delete! (:db-spec db) n ["id = ?" id]))
+      (sql/delete! (:db-spec db) n ["id = ?" (uuid id)]))
     (catch Exception e
       (throw e))))
 
@@ -129,11 +130,11 @@
     ""))
 
 (defn- where-compop-sql [compop path value]
-  (let [pname (utils/random-string)]
+  (let [pname (random-string)]
     [(str "(body->>'" (name path) "')" (to-db-type-cast value) " " (name compop) " @:" pname) {(keyword pname) value}]))
 
 (defn- where-contains-sql [db val]
-  (let [pname (utils/random-string)
+  (let [pname (random-string)
         js ((:serialize db) val)]
     [(str "body @> '" js "'")]))
 
