@@ -57,6 +57,14 @@
         (is (= (count result) 1))
         (is (= (:name (first result) "m3")))))))
 
+(deftest like-search
+  (let [m1 (toadie/save test-store :people {:name "maria"})
+        m2 (toadie/save test-store :people {:name "john"})]
+    (testing "where property like string"
+      (let [result (toadie/query test-store :people {:where [:like :name "ma%"]})]
+        (is (= (count result) 1))
+        (is (= (:name (first result)) "maria"))))))
+
 (deftest contains-condition
   (let [t1 (toadie/save test-store :posts {:title "t1" :tags ["web" "testing"]})
         t2 (toadie/save test-store :posts {:title "t2" :tags []})

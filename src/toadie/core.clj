@@ -142,11 +142,10 @@
   (if-let [where (:where query)]
     (let [op (first where)]
       (cond
-        (some #{op} [:> :>= := :<= :<])
+        (some #{op} [:> :>= := :<= :< :like])
         (where-compop-sql op (second where) (last where))
         (= op :contains) (where-contains-sql db (second where))
         :else (Exception. (str "Provided condition:" (name op) " is not supported."))))))
-
 
 (defn to-sql [db col q]
   (if-let [[where-s where-ps] (where-sql db q)]
