@@ -86,7 +86,7 @@
   (try
     (row-data-to-map (sql/query (:db-spec db) query))
     (catch Exception e
-      (println e))))
+      (throw e))))
 
 (defn load-by-id [db n id]
   (try
@@ -104,7 +104,6 @@
       (sql/delete! (:db-spec db) n ["id = ?" (uuid id)]))
     (catch Exception e
       (throw e))))
-
 
 (defn- limit-sql [query]
   (if-let [limit (:limit query)]
@@ -138,18 +137,26 @@
         js ((:serialize db) val)]
     [(str "body @> '" js "'")]))
 
-(defn where-sql [db query]
-  (if-let [where (:where query)]
-    (let [op (first where)]
-      (cond
-        (some #{op} [:> :>= := :<= :< :like])
-        (where-compop-sql op (second where) (last where))
-        (= op :contains) (where-contains-sql db (second where))
-        :else (Exception. (str "Provided condition:" (name op) " is not supported."))))))
+(defn- where-sql-simple [db part-where]
+  (let [op (first part-where)]
+    (cond
+      (some #{op} [:> :>= := :<= :< :like]) (where-compop-sql op (second part-where) (last part-where))
+      (= op :contains) (where-contains-sql db (second part-where))
+      :else (throw (Exception. (str "Provided condition:" (name op) " is not supported."))))))
+
+(defn where-sql [db where]
+    (if
+      (vector? (first where))
+      (let [m (map-indexed (fn [idx item] (if (even? idx) (where-sql db item) [(name item) {}])) where)
+            r (reduce (fn [[sj ps] [s p]] [(str sj " " s) (merge ps p)]) (vec m))]
+        (let [[q ps] r]
+          [(str "(" q ")") ps]))
+      (where-sql-simple db where)))
 
 (defn to-sql [db col q]
-  (if-let [[where-s where-ps] (where-sql db q)]
-    [(str (select-sql col) " where " where-s " " (offset-sql q) " " (limit-sql q)) where-ps]
+  (if-let [where (:where q)]
+    (let [[where-s where-ps] (where-sql db where)]
+      [(str (select-sql col) " where " where-s " " (offset-sql q) " " (limit-sql q)) where-ps])
     [(str (select-sql col) " " (offset-sql q) " " (limit-sql q))]))
 
 (defn query [db col q]
