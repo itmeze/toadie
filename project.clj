@@ -1,4 +1,4 @@
-(defproject toadie "0.1.0-SNAPSHOT"
+(defproject toadie "0.2.0"
   :description "Turn postgresql database into document storage!!"
   :url "https://github.com/itmeze/toadie"
   :license {:name "Eclipse Public License"
