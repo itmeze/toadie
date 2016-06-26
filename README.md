@@ -6,6 +6,8 @@ A Clojure library designed to let you work with PostgreSQL as a document store!
 
 Since version 9.4 Postres allows for storing, querying and indexing on json column types. This allows to easily persist clojure's map in database.  
 
+This concept is not new, take a look at Elixir's Moebius (https://github.com/robconery/moebius). Especially part with JSONB support.
+
 ##Geting stared
 
 Toadie artifacts are [deployed to clojars] (https://clojars.org/toadie) 
