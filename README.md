@@ -70,9 +70,9 @@ user=>
 (toadie/save db :people {:name "maria" :surname "johnson" :age 43, :id "26ecbf13-4628-430e-b998-6022db44b334"})
 ```
 
-At first call to _save_ toadie will create destination table. _Save_ returned map with assoc id key from database. As from the example above function works with both maps and vectors of maps.
+At first call to _save_ toadie will create destination table. _Save_ returns map with assoc id key from database. As from the example above, function works with both maps and vectors of maps.
 
-Update works similarly, 
+When id key is present in map, record is going to be updated, instead of being inserted.
 
 ## Querying
 
