@@ -17,6 +17,7 @@ With Leiningen:
     [toadie "0.2.0"]
 
 With Gradle:
+    
     compile "toadie:toadie:0.2.0"
 
 With Maven:
