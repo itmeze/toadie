@@ -14,18 +14,18 @@ Toadie artifacts are [deployed to clojars] (https://clojars.org/toadie)
 
 With Leiningen:
 
-    [toadie "0.2.0"]
+    [toadie "0.3.0"]
 
 With Gradle:
 
-    compile "toadie:toadie:0.2.0"
+    compile "toadie:toadie:0.3.0"
 
 With Maven:
 
     <dependency>
       <groupId>toadie</groupId>
       <artifactId>toadie</artifactId>
-      <version>0.2.0</version>
+      <version>0.3.0</version>
     </dependency>
 
 We get started by calling _docstore_ function:
