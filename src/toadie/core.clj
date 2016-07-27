@@ -68,7 +68,7 @@
   (try
     (->
       (cond
-        (:id data) (clojure.java.jdbc/query (:db-spec db) ["Update people set body = ? where id = ? returning *" data (uuid (:id data))])
+        (:id data) (clojure.java.jdbc/query (:db-spec db) [(str "Update " (name n) " set body = ? where id = ? returning *") data (uuid (:id data))])
         :else (let [uuid (uuid)]
                 (sql/insert! (:db-spec db) n {:id uuid :body (assoc data :id uuid)})))
       (row-data-to-map)
