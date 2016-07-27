@@ -3,8 +3,12 @@
            [toadie.utils :refer :all]
            [toadie.named-params :as nparams]
            [clojure.core :refer :all]
-           [cheshire.core :as json])
-  (:import (org.postgresql.util PGobject)))
+           [clojure.string :as string]
+           [cheshire.core :as json]
+           [clojure.data.csv :as csv])
+  (:import (org.postgresql.util PGobject))
+  (:import org.postgresql.copy.CopyManager)
+  (:import (java.io StringWriter StringReader)))
 
 (defn sql-create-table [name]
   (str "create table " name "(id uuid primary key not null,body jsonb not null);"))
@@ -81,6 +85,24 @@
   (if (vector? data)
     (doall (map #(save-single db n %) data))
     (save-single db n data)))
+
+(defn to-reader [db data]
+  (let [data-with-ids (map #(assoc % :id (uuid)) data)
+        els (map #(vector (str (:id %)) ((:serialize db) %)) data-with-ids)
+        sw (StringWriter.)
+        writer (csv/write-csv sw els)]
+    (StringReader. (.toString sw))))
+
+(defn batch-insert [db n data]
+  (try
+    (let [rec (to-reader db data)
+          conn (sql/get-connection (:db-spec db))
+          man (CopyManager. conn)]
+      (.copyIn man (str "COPY " (name n) " from STDIN with (format csv)") rec))
+    (catch java.sql.SQLException e
+      ;(sql/print-sql-exception e)
+      (create-table db (name n))
+      (batch-insert db n data))))
 
 (defn raw-query [db query]
   (try

@@ -12,4 +12,5 @@
                  [cheshire "5.5.0"]
                  [clj-time "0.11.0"]
                  [proto-repl "0.1.2"]
-                 [environ "1.0.2"]])
+                 [environ "1.0.2"]
+                 [org.clojure/data.csv "0.1.3"]])
