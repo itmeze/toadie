@@ -10,14 +10,14 @@ This concept is not new, take a look at Elixir's Moebius (https://github.com/rob
 
 ##Geting stared
 
-Toadie artifacts are [deployed to clojars] (https://clojars.org/toadie) 
+Toadie artifacts are [deployed to clojars] (https://clojars.org/toadie)
 
 With Leiningen:
 
     [toadie "0.2.0"]
 
 With Gradle:
-    
+
     compile "toadie:toadie:0.2.0"
 
 With Maven:
@@ -36,8 +36,8 @@ We get started by calling _docstore_ function:
 ;pass connection string to docstore method
 (def db (toadie/docstore conn-str))
 
-;initilize with map 
-(def db (toadie/docstore { 
+;initilize with map
+(def db (toadie/docstore {
           :serialize (fn [x] (to-json x))
           :deserialize (fn [x] (from-json x))
           :classname "org.postgresql.Driver"
@@ -51,7 +51,7 @@ Docstore' map can be created with connection string or map that is further on pa
 
 ## Inserting/Update
 
-``` clojure 
+``` clojure
 
 ;insert map into :people collection
 (toadie/save db :people {:name "maria" :surname "johnson" :age 42})
@@ -60,13 +60,13 @@ user=>
  :name "maria",
  :surname "johnson",
  :id "26ecbf13-4628-430e-b998-6022db44b334"}
- 
+
 ;insert vector of maps
 (toadie/save db :people [{:name "michal"} {:name "marcelina"}])
 user=>
 ({:name "michal", :id "f5ec1d0b-6f13-433f-b8c5-f9643231f1ff"}
  {:name "marcelina", :id "57107e40-e0d6-4146-9d3d-a16912add53f"})
- 
+
 ;update map by passing :id key
 (toadie/save db :people {:name "maria" :surname "johnson" :age 43, :id "26ecbf13-4628-430e-b998-6022db44b334"})
 ```
@@ -74,6 +74,11 @@ user=>
 At first call to _save_ will create destination table. _save_ returns map with assoc id key from database. As from the example above, function works with both maps and vectors of maps.
 
 When id key is present in map, record is going to be updated, instead of being inserted.
+
+Toadie supports batch inserts. Those use Postgres Copy functionality:
+``` clojure
+(toadie/batch-insert db :people [{:name "maria" :surname "johnson" :age 43, :id "26ecbf13-4628-430e-b998-6022db44b334"}{:name "other"}])
+```
 
 ## Querying
 
@@ -93,7 +98,7 @@ Querying is best explained by examples:
 ;query :people collection where age is > 13
 (toadie/query db :people {:where [:> :age 13]})
 
-;query :people with name starting with "ma" 
+;query :people with name starting with "ma"
 (toadie/query db :people {:where [:like :name "ma%"]})
 
 ;query :posts collection where any of tags is "clojure"
@@ -118,6 +123,12 @@ Currently only delete-by-id is supported
 ``` clojure
 (toadie/delete-by-id db :people (:id "26ecbf13-4628-430e-b998-6022db44b334"))
 ```
+
+# Change Log
+
+## [0.3.0] - 2016-07-27
+### Added
+- toadie now supports batch-insert
 
 ## License
 
