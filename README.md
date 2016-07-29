@@ -80,6 +80,8 @@ Toadie supports batch inserts. Those use Postgres Copy functionality:
 (toadie/batch-insert db :people [{:name "maria" :surname "johnson" :age 43, :id "26ecbf13-4628-430e-b998-6022db44b334"}{:name "other"}])
 ```
 
+When testing on local machine, batch insert via 'copy' turned out to be 100x faster than 'insert' one by one :)
+
 ## Querying
 
 Querying is best explained by examples:
